@@ -10,14 +10,19 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
   const { user } = useAuth();
 
-  // Handle navigation based on authentication state
+  // Redirect to dashboard when user logs in
   useEffect(() => {
-    if (user && currentPage !== 'dashboard') {
+    if (user && currentPage === 'auth') {
       setCurrentPage('dashboard');
-    } else if (!user && currentPage === 'dashboard') {
+    }
+  }, [user, currentPage]);
+
+  // Redirect to landing page when user logs out
+  useEffect(() => {
+    if (!user && currentPage === 'dashboard') {
       setCurrentPage('landing');
     }
-  }, [user]);
+  }, [user, currentPage]);
 
   if (currentPage === 'dashboard') {
     return <DashboardPage />;

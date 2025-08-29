@@ -30,11 +30,6 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  const handleLogout = () => {
-    logout();
-    // The App component will handle the redirect to landing page
-  };
-
   return (
     <motion.div
       initial={{ x: -300 }}
@@ -83,7 +78,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleLogout}
+            onClick={logout}
             className="w-full flex items-center space-x-3 px-3 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
           >
             <LogOut className="h-5 w-5" />
