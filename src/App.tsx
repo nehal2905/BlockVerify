@@ -10,6 +10,13 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
   const { user } = useAuth();
 
+  // Redirect to dashboard when user logs in
+  useEffect(() => {
+    if (user && currentPage === 'auth') {
+      setCurrentPage('dashboard');
+    }
+  }, [user, currentPage]);
+
   // Redirect to landing page when user logs out
   useEffect(() => {
     if (!user && currentPage === 'dashboard') {
@@ -22,7 +29,7 @@ function AppContent() {
   }
 
   if (currentPage === 'auth') {
-    return <AuthForm onBack={() => setCurrentPage('landing')} onLogin={() => setCurrentPage('dashboard')} />;
+    return <AuthForm onBack={() => setCurrentPage('landing')} />;
   }
 
   // Default: Landing Page
