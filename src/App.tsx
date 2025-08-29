@@ -7,24 +7,16 @@ import { DashboardPage } from './pages/DashboardPage';
 
 function AppContent() {
   const [showAuth, setShowAuth] = useState(false);
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
-  // Show a loading screen while authentication status is loading (if applicable)
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  // Render Dashboard if authenticated
   if (user) {
     return <DashboardPage />;
   }
 
-  // Render Auth form if triggered
   if (showAuth) {
     return <AuthForm onBack={() => setShowAuth(false)} />;
   }
 
-  // Default: Render Landing Page
   return <LandingPage onGetStarted={() => setShowAuth(true)} />;
 }
 
