@@ -6,18 +6,20 @@ import { AuthForm } from './components/Auth/AuthForm';
 import { DashboardPage } from './pages/DashboardPage';
 
 function AppContent() {
-  const [showAuth, setShowAuth] = useState(false);
+  const [currentPage, setCurrentPage] = useState<'landing' | 'auth' | 'dashboard'>('landing');
   const { user } = useAuth();
 
+  // If user is logged in, always go to dashboard
   if (user) {
     return <DashboardPage />;
   }
 
-  if (showAuth) {
-    return <AuthForm onBack={() => setShowAuth(false)} />;
+  if (currentPage === 'auth') {
+    return <AuthForm onBack={() => setCurrentPage('landing')} />;
   }
 
-  return <LandingPage onGetStarted={() => setShowAuth(true)} />;
+  // Default: show landing page
+  return <LandingPage onGetStarted={() => setCurrentPage('auth')} />;
 }
 
 function App() {
