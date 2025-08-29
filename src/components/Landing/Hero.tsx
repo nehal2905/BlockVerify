@@ -8,12 +8,7 @@ interface HeroProps {
 
 export function Hero({ onGetStarted }: HeroProps) {
   return (
-    <motion.nav
-      className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
-    >
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 overflow-hidden">
       {/* Animated background particles */}
       <div className="absolute inset-0">
         {Array.from({ length: 50 }).map((_, i) => (
@@ -39,7 +34,6 @@ export function Hero({ onGetStarted }: HeroProps) {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -57,18 +51,17 @@ export function Hero({ onGetStarted }: HeroProps) {
                 Document
               </span>
             </motion.h1>
-
+            
             <motion.p
               className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Secure, transparent, and tamper-proof document verification powered by blockchain technology.
+              Secure, transparent, and tamper-proof document verification powered by blockchain technology. 
               Verify credentials, certificates, and official documents with absolute confidence.
             </motion.p>
 
-            {/* Buttons */}
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               initial={{ opacity: 0, y: 30 }}
@@ -96,7 +89,6 @@ export function Hero({ onGetStarted }: HeroProps) {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Verification Card */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -105,22 +97,20 @@ export function Hero({ onGetStarted }: HeroProps) {
           >
             <div className="relative bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-2xl p-8">
               <motion.div
-                animate={{
+                animate={{ 
                   rotate: [0, 5, -5, 0],
-                  scale: [1, 1.02, 1],
+                  scale: [1, 1.02, 1]
                 }}
-                transition={{
-                  duration: 6,
+                transition={{ 
+                  duration: 6, 
                   repeat: Infinity,
-                  ease: 'easeInOut',
+                  ease: "easeInOut"
                 }}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6"
               >
                 <div className="flex items-center space-x-3 mb-4">
                   <Shield className="h-6 w-6 text-green-600" />
-                  <span className="text-sm font-semibold text-green-600">
-                    VERIFIED DOCUMENT
-                  </span>
+                  <span className="text-sm font-semibold text-green-600">VERIFIED DOCUMENT</span>
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                   University Diploma
@@ -129,9 +119,7 @@ export function Hero({ onGetStarted }: HeroProps) {
                   Bachelor of Computer Science
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Hash: 0x7f8a9b...
-                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Hash: 0x7f8a9b...</span>
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
