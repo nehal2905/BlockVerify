@@ -153,53 +153,47 @@ export function DashboardHome() {
             </div>
           ) : (
             documents.map((doc, index) => (
-            <motion.div
-              key={doc.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
-              className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {doc.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {doc.type} • Uploaded {doc.uploadDate}
-                    </p>
-                    <div className="flex space-x-2 mt-1">
-                      {doc.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded-md"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(doc.status)}`}>
-                    <div className="flex items-center space-x-1">
-                      {getStatusIcon(doc.status)}
-                      <span className="capitalize">{doc.status}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))
-          )}
+  <motion.div
+    key={doc.id}
+    initial={{ opacity: 0, x: -20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.5, delay: index * 0.1 }}
+    whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
+    className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+          <FileText className="h-5 w-5 text-white" />
         </div>
-      </motion.div>
+        <div>
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {doc.title}
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {doc.type} • Uploaded {doc.uploadDate}
+          </p>
+          <div className="flex space-x-2 mt-1">
+            {doc.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded-md"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-4">
+        <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(doc.status)}`}>
+          <div className="flex items-center space-x-1">
+            {getStatusIcon(doc.status)}
+            <span className="capitalize">{doc.status}</span>
+          </div>
+        </div>
+      </div>
     </div>
-  );
-}
+  </motion.div>
+))}
