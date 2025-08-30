@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Shield, CheckCircle, Clock, AlertCircle, Lock, Unlock } from 'lucide-react';
+import { DocumentService } from '../../services/documentService';
 import { VerificationStep } from '../../types';
 
 export function VerificationPage() {
@@ -16,29 +17,31 @@ export function VerificationPage() {
     if (!documentId.trim()) return;
 
     setVerifying(true);
-    
-    // Simulate verification process
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const mockResult = {
-      status: Math.random() > 0.3 ? 'verified' : 'pending' as const,
-      document: {
-        title: 'University Diploma',
-        type: 'Educational Certificate',
-        uploadDate: '2025-01-10',
-        hash: documentId,
-        verifiedBy: 'Academic Registrar'
-      },
-      steps: [
-        { id: '1', title: 'Document Hash Verification', completed: true, timestamp: '2025-01-10 10:30:00' },
-        { id: '2', title: 'Blockchain Validation', completed: true, timestamp: '2025-01-10 10:31:15' },
-        { id: '3', title: 'Authority Verification', completed: true, timestamp: '2025-01-10 10:32:45' },
-        { id: '4', title: 'Final Approval', completed: Math.random() > 0.3, timestamp: Math.random() > 0.3 ? '2025-01-10 10:35:20' : undefined }
-      ]
-    };
-
-    setVerificationResult(mockResult);
-    setVerifying(false);
+    try {
+      const document = await DocumentService.getDocumentByHash(documentId);
+      
+      if (!document) {
+        setVerificationResult({ status: 'rejected' });
+      } else {
+        const steps = await DocumentService.getVerificationSteps(document.id);
+        setVerificationResult({
+          status: document.status as any,
+          document,
+          steps: steps.map(step => ({
+            id: step.id,
+            title: step.step_name,
+            completed: step.completed,
+            timestamp: step.completed_at ? new Date(step.completed_at).toLocaleString() : undefined
+          }))
+        });
+      }
+    } catch (error) {
+      console.error('Verification failed:', error);
+      setVerificationResult({ status: 'rejected' });
+    } finally {
+      setVerifying(false);
+    }
   };
 
   const getStatusIcon = () => {

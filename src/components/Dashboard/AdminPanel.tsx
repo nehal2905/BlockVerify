@@ -1,30 +1,39 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Users, FileText, CheckCircle, XCircle, TrendingUp, Settings } from 'lucide-react';
+import { AnalyticsService } from '../../services/analyticsService';
+import { DocumentService } from '../../services/documentService';
 import { Analytics } from '../../types';
-
-const mockAnalytics: Analytics = {
-  totalUploads: 1247,
-  totalVerifications: 1098,
-  pendingRequests: 23,
-  rejectedDocuments: 126
-};
-
-const mockUsers = [
-  { id: '1', name: 'Alice Johnson', email: 'alice@example.com', role: 'verifier', status: 'active', documents: 45 },
-  { id: '2', name: 'Bob Smith', email: 'bob@example.com', role: 'user', status: 'active', documents: 12 },
-  { id: '3', name: 'Carol Wilson', email: 'carol@example.com', role: 'user', status: 'inactive', documents: 8 }
-];
-
-const mockPendingRequests = [
-  { id: '1', title: 'Medical License', user: 'Dr. Sarah Brown', uploadDate: '2025-01-12', type: 'License' },
-  { id: '2', title: 'Engineering Degree', user: 'Mike Chen', uploadDate: '2025-01-12', type: 'Educational Certificate' },
-  { id: '3', title: 'Business Certificate', user: 'Lisa Garcia', uploadDate: '2025-01-11', type: 'Business Document' }
-];
 
 export function AdminPanel() {
   const [activeTab, setActiveTab] = useState('analytics');
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [pendingDocuments, setPendingDocuments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    loadAdminData();
+  }, []);
+
+  const loadAdminData = async () => {
+    try {
+      const [analyticsData, usersData, pendingDocs] = await Promise.all([
+        AnalyticsService.getAnalytics(),
+        AnalyticsService.getAllUsers(),
+        DocumentService.getPendingDocuments()
+      ]);
+      
+      setAnalytics(analyticsData);
+      setUsers(usersData);
+      setPendingDocuments(pendingDocs);
+    } catch (error) {
+      console.error('Failed to load admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const tabs = [
     { id: 'analytics', label: 'Analytics', icon: TrendingUp },
     { id: 'users', label: 'User Management', icon: Users },
@@ -33,11 +42,15 @@ export function AdminPanel() {
   ];
 
   const handleApprove = (requestId: string) => {
-    console.log('Approved:', requestId);
+    DocumentService.verifyDocument(requestId, true)
+      .then(() => loadAdminData())
+      .catch(console.error);
   };
 
   const handleReject = (requestId: string) => {
-    console.log('Rejected:', requestId);
+    DocumentService.verifyDocument(requestId, false, 'Document rejected by admin')
+      .then(() => loadAdminData())
+      .catch(console.error);
   };
 
   return (
@@ -85,10 +98,10 @@ export function AdminPanel() {
               {/* Analytics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { label: 'Total Uploads', value: mockAnalytics.totalUploads, icon: FileText, color: 'blue', change: '+12%' },
-                  { label: 'Verifications', value: mockAnalytics.totalVerifications, icon: CheckCircle, color: 'green', change: '+8%' },
-                  { label: 'Pending Requests', value: mockAnalytics.pendingRequests, icon: Clock, color: 'yellow', change: '-5%' },
-                  { label: 'Rejected Documents', value: mockAnalytics.rejectedDocuments, icon: XCircle, color: 'red', change: '+2%' }
+                  { label: 'Total Uploads', value: analytics?.totalUploads || 0, icon: FileText, color: 'blue', change: '+12%' },
+                  { label: 'Verifications', value: analytics?.totalVerifications || 0, icon: CheckCircle, color: 'green', change: '+8%' },
+                  { label: 'Pending Requests', value: analytics?.pendingRequests || 0, icon: Clock, color: 'yellow', change: '-5%' },
+                  { label: 'Rejected Documents', value: analytics?.rejectedDocuments || 0, icon: XCircle, color: 'red', change: '+2%' }
                 ].map((stat, index) => {
                   const Icon = stat.icon;
                   return (
@@ -136,7 +149,16 @@ export function AdminPanel() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              {mockUsers.map((user, index) => (
+              {loading ? (
+                <div className="text-center py-8">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"
+                  />
+                </div>
+              ) : (
+                users.map((user, index) => (
                 <motion.div
                   key={user.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -164,19 +186,16 @@ export function AdminPanel() {
                     }`}>
                       {user.role}
                     </span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      user.status === 'active' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                    }`}>
-                      {user.status}
+                    <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                      active
                     </span>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {user.documents} docs
+                      {user.documents?.[0]?.count || 0} docs
                     </p>
                   </div>
                 </motion.div>
               ))}
+              )}
             </motion.div>
           )}
 
@@ -186,7 +205,16 @@ export function AdminPanel() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              {mockPendingRequests.map((request, index) => (
+              {loading ? (
+                <div className="text-center py-8">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"
+                  />
+                </div>
+              ) : (
+                pendingDocuments.map((request, index) => (
                 <motion.div
                   key={request.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -199,7 +227,7 @@ export function AdminPanel() {
                     <div>
                       <p className="font-semibold text-gray-900 dark:text-white">{request.title}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {request.user} • {request.type} • {request.uploadDate}
+                        {request.type} • {request.uploadDate}
                       </p>
                     </div>
                   </div>
@@ -226,6 +254,7 @@ export function AdminPanel() {
                   </div>
                 </motion.div>
               ))}
+              )}
             </motion.div>
           )}
 

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { AuthService } from '../services/authService';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -16,51 +17,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem('blockverify_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
+    // Initialize auth state
+    AuthService.getCurrentUser().then(setUser).finally(() => setIsLoading(false));
+
+    // Listen for auth changes
+    const { data: { subscription } } = AuthService.onAuthStateChange(setUser);
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string, role: string) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name: email.split('@')[0],
-      role: role as 'admin' | 'verifier' | 'user'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('blockverify_user', JSON.stringify(mockUser));
-    setIsLoading(false);
+    try {
+      await AuthService.signIn(email, password);
+      // User state will be updated via onAuthStateChange
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const signup = async (email: string, password: string, name: string, role: string) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name,
-      role: role as 'admin' | 'verifier' | 'user'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('blockverify_user', JSON.stringify(mockUser));
-    setIsLoading(false);
+    try {
+      await AuthService.signUp(email, password, name, role);
+      // User state will be updated via onAuthStateChange
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('blockverify_user');
+    AuthService.signOut();
+    // User state will be updated via onAuthStateChange
   };
 
   return (

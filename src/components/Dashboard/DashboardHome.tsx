@@ -1,44 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Shield, Clock, CheckCircle, AlertCircle, Upload } from 'lucide-react';
+import { DocumentService } from '../../services/documentService';
 import { Document } from '../../types';
 
-const mockDocuments: Document[] = [
-  {
-    id: '1',
-    title: 'University Diploma',
-    type: 'Educational Certificate',
-    status: 'verified',
-    uploadDate: '2025-01-10',
-    hash: '0x7f8a9b2c1d4e5f6g7h8i9j',
-    size: 2048576,
-    tags: ['education', 'bachelor'],
-    verifiedBy: 'Academic Registrar',
-    verificationDate: '2025-01-11'
-  },
-  {
-    id: '2',
-    title: 'Professional License',
-    type: 'License',
-    status: 'pending',
-    uploadDate: '2025-01-12',
-    hash: '0x1a2b3c4d5e6f7g8h9i0j',
-    size: 1536000,
-    tags: ['professional', 'license']
-  },
-  {
-    id: '3',
-    title: 'Medical Certificate',
-    type: 'Healthcare Document',
-    status: 'rejected',
-    uploadDate: '2025-01-08',
-    hash: '0x9z8y7x6w5v4u3t2s1r0q',
-    size: 3072000,
-    tags: ['medical', 'certificate']
-  }
-];
-
 export function DashboardHome() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    verified: 0,
+    pending: 0,
+    rejected: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      const docs = await DocumentService.getUserDocuments();
+      setDocuments(docs.slice(0, 3)); // Show only recent 3
+      
+      setStats({
+        total: docs.length,
+        verified: docs.filter(d => d.status === 'verified').length,
+        pending: docs.filter(d => d.status === 'pending').length,
+        rejected: docs.filter(d => d.status === 'rejected').length
+      });
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'verified':
@@ -70,9 +67,9 @@ export function DashboardHome() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Documents', value: '24', icon: FileText, color: 'blue' },
-          { label: 'Verified', value: '18', icon: CheckCircle, color: 'green' },
-          { label: 'Pending', value: '4', icon: Clock, color: 'yellow' },
+          { label: 'Total Documents', value: stats.total.toString(), icon: FileText, color: 'blue' },
+          { label: 'Verified', value: stats.verified.toString(), icon: CheckCircle, color: 'green' },
+          { label: 'Pending', value: stats.pending.toString(), icon: Clock, color: 'yellow' },
           { label: 'Security Score', value: '98%', icon: Shield, color: 'purple' }
         ].map((stat, index) => {
           const Icon = stat.icon;
@@ -141,7 +138,21 @@ export function DashboardHome() {
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {mockDocuments.map((doc, index) => (
+          {loading ? (
+            <div className="p-6 text-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"
+              />
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="p-6 text-center">
+              <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-500 dark:text-gray-400">No documents uploaded yet</p>
+            </div>
+          ) : (
+            documents.map((doc, index) => (
             <motion.div
               key={doc.id}
               initial={{ opacity: 0, x: -20 }}
@@ -185,7 +196,8 @@ export function DashboardHome() {
                 </div>
               </div>
             </motion.div>
-          ))}
+          ))
+          )}
         </div>
       </motion.div>
     </div>

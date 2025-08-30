@@ -1,60 +1,41 @@
 import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Search, Filter, CheckCircle, Clock, AlertCircle, Download, Eye } from 'lucide-react';
+import { DocumentService } from '../../services/documentService';
 import { Document } from '../../types';
 
-const mockDocuments: Document[] = [
-  {
-    id: '1',
-    title: 'University Diploma',
-    type: 'Educational Certificate',
-    status: 'verified',
-    uploadDate: '2025-01-10',
-    hash: '0x7f8a9b2c1d4e5f6g7h8i9j',
-    size: 2048576,
-    tags: ['education', 'bachelor'],
-    verifiedBy: 'Academic Registrar',
-    verificationDate: '2025-01-11'
-  },
-  {
-    id: '2',
-    title: 'Professional License',
-    type: 'License',
-    status: 'pending',
-    uploadDate: '2025-01-12',
-    hash: '0x1a2b3c4d5e6f7g8h9i0j',
-    size: 1536000,
-    tags: ['professional', 'license']
-  },
-  {
-    id: '3',
-    title: 'Medical Certificate',
-    type: 'Healthcare Document',
-    status: 'rejected',
-    uploadDate: '2025-01-08',
-    hash: '0x9z8y7x6w5v4u3t2s1r0q',
-    size: 3072000,
-    tags: ['medical', 'certificate']
-  },
-  {
-    id: '4',
-    title: 'Technical Certification',
-    type: 'Professional Certificate',
-    status: 'verified',
-    uploadDate: '2025-01-05',
-    hash: '0xa1b2c3d4e5f6g7h8i9j0',
-    size: 1024000,
-    tags: ['technology', 'aws'],
-    verifiedBy: 'AWS Training',
-    verificationDate: '2025-01-06'
-  }
-];
-
 export function DocumentsPage() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  const filteredDocuments = mockDocuments.filter(doc => {
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
+  const loadDocuments = async () => {
+    try {
+      const docs = await DocumentService.getUserDocuments();
+      setDocuments(docs);
+    } catch (error) {
+      console.error('Failed to load documents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async (doc: Document) => {
+    try {
+      const url = await DocumentService.getDocumentUrl(doc.hash);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Failed to download document:', error);
+    }
+  };
+
+  const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          doc.type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || doc.status === filterStatus;
@@ -129,7 +110,24 @@ export function DocumentsPage() {
       </div>
 
       {/* Documents Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {loading ? (
+        <div className="text-center py-12">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"
+          />
+          <p className="text-gray-500 dark:text-gray-400">Loading documents...</p>
+        </div>
+      ) : filteredDocuments.length === 0 ? (
+        <div className="text-center py-12">
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">
+            {searchTerm || filterStatus !== 'all' ? 'No documents match your filters' : 'No documents uploaded yet'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredDocuments.map((doc, index) => (
           <motion.div
             key={doc.id}
@@ -167,7 +165,7 @@ export function DocumentsPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">File Size:</span>
                   <span className="text-gray-900 dark:text-white">
-                    {(doc.size / 1024 / 1024).toFixed(2)} MB
+                    {doc.size ? (doc.size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown'}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -207,6 +205,7 @@ export function DocumentsPage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDownload(doc)}
                   className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <Download className="h-4 w-4" />
@@ -216,7 +215,8 @@ export function DocumentsPage() {
             </div>
           </motion.div>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
