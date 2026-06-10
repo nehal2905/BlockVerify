@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/blockverify-banner.svg" alt="BlockVerify — Blockchain-Powered Verification" width="100%" />
+<img src="./blockverify-banner.svg" alt="BlockVerify — Blockchain-Powered Verification" width="100%" />
 
 <br/>
 
